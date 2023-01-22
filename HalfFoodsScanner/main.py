@@ -6,6 +6,7 @@ import os
 
 def error_checker(str_one: str, str_two: str) -> bool:
     
+    assert(len(str_one) == len(str_two))
     error_count = 0
     for i, ch in enumerate(str_one):
         if str_two[i] != ch:
@@ -68,7 +69,7 @@ class TextLoader(DataLoader):
             # Line format: [MMDDYYYY][Name]
             first_line = f.readline()
             purchase_date = datetime.strptime(first_line[:8], "%m%d%Y")
-            customer_name = first_line[8:]
+            customer_name = first_line[8:].strip()
 
             product_type_history = defaultdict(list)
             subtype_lookup = defaultdict(set) 
@@ -119,6 +120,7 @@ def main():
 
     # menu
     while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
         print("""
         1: Print basic data summary
         2: Detailed Menu
@@ -132,18 +134,20 @@ def main():
                 print_basic_data(product_key)
             case "2":
                 detailed_menu(product_key)
+            case "3":
+                product_key = add_product_type(product_key)
             case "9":
                 break
             case _:
                 print("Invalid selection. Press Enter to retry.")
                 input()
                 
-        os.system("cls" if os.name == "nt" else "clear")
 
 def detailed_menu(product_key: dict[str, str]):
     purchase_info = load_data(product_key)
 
     while True:
+        os.system("cls" if os.name == "nt" else "clear")
         print("""
         1: Print detailed order summary
         2: View subtypes
@@ -171,8 +175,6 @@ def detailed_menu(product_key: dict[str, str]):
                 break
 
 
-
-
 def print_basic_data(product_key: dict[str, str]) -> None:
 
     try:
@@ -183,17 +185,26 @@ def print_basic_data(product_key: dict[str, str]) -> None:
     except FileNotFoundError:
         print("File not found! Press Enter to return to menu.")
         input()
-        os.system('cls' if os.name == 'nt' else 'clear')
-
 
 
 def load_data(product_key) -> PurchaseInfo:
-    path_to_data = input("input path: ")
+    path_to_data = input("Input path to data: ")
 
     # based on path, use a different loader
     datareader = TextLoader()
     purchase_info = datareader.load_data(product_key, path_to_data)
     return purchase_info
+
+
+def add_product_type(product_key: dict[str, str]) -> dict[str, str]:
+    product_key_id = input("Input four letter product abbreivation: ")
+    if len(product_key_id) != 4:
+        print("Product key is not four letters. Press Enter to return to menu.")
+        input()
+    product_key_def = input("Input description of product: ")
+    product_key[product_key_id] = product_key_def
+    return product_key
+
 
 if __name__ == "__main__":
     main()
