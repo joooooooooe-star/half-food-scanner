@@ -3,7 +3,9 @@ from HalfFoodsScanner.dataloaders.textloader import TextLoader
 import os
 
 def init_product_key() -> dict[str, str]:
-    """Creates a default product lookup key that contains the default product codes and descriptions."""
+    """Creates a default product lookup key that contains the default product codes and descriptions.
+    
+    :returns: The product lookup key"""
     product_key = {
         "BEVG": "Beverages",
         "BAKE": "Baked Goods",
@@ -20,11 +22,13 @@ def init_product_key() -> dict[str, str]:
     return product_key
 
 def main():
+    """
+    The entry point of the program.
+    """
 
-    # load product key
     product_key = init_product_key()
 
-    # menu
+    # Main menu
     while True:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("""
@@ -39,7 +43,7 @@ def main():
             case "1":
                 print_basic_data(product_key)
             case "2":
-                detailed_menu(product_key)
+                show_detailed_menu(product_key)
             case "3":
                 product_key = add_product_type(product_key)
             case "9":
@@ -47,9 +51,36 @@ def main():
             case _:
                 input("Invalid selection. Press Enter to retry...")
                 
+def print_basic_data(product_key: dict[str, str]) -> None:
+    """
+    Prints basic customer information: The customer name, the date of purchase, and the total number of items purchased.
+    This is part 1 of the prompt.
 
-def detailed_menu(product_key: dict[str, str]):
-    purchase_info = load_data(product_key)
+    :product_key: The product lookup key.
+    :raises FileNotFoundError: When the file is unable to be found.
+    """
+
+    try:
+        purchase_info = load_data(product_key)
+        print(purchase_info.get_basic_purchase_information())
+        input("\n Press Enter to Return...")
+    except FileNotFoundError:
+        input("File not found! Press Enter to Return...")
+
+
+def show_detailed_menu(product_key: dict[str, str]) -> None:
+    """
+    Leads to a second menu where the user may see the number and list of unique IDs and quantity per existing product type,
+    as well as the most common product type.
+
+    There is also an option to display all subtypes of a given product type.
+    :product_key: The product lookup key.
+    """
+    try:
+        purchase_info = load_data(product_key)
+    except FileNotFoundError:
+        input("File not found! Press Enter to Return...")
+        return
 
     while True:
         os.system("cls" if os.name == "nt" else "clear")
@@ -78,29 +109,33 @@ def detailed_menu(product_key: dict[str, str]):
                 break
 
 
-def print_basic_data(product_key: dict[str, str]) -> None:
+def load_data(product_key: dict[str, str]) -> PurchaseInfo:
+    """
+    Prompts user for a path, and then loads data.
 
-    try:
-        purchase_info = load_data(product_key)
-        print(purchase_info.get_basic_purchase_information())
-        input("\n Press Enter to Return...")
-    except FileNotFoundError:
-        input("File not found! Press Enter to Return...")
-
-
-def load_data(product_key) -> PurchaseInfo:
+    :product_key: Product Lookup Key
+    :returns PurchaseInfo: The data extracted from the file.
+    
+    """
     path_to_data = input("Input path to data: ")
 
-    # based on path, use a different loader
+    # Placeholder in case a different format is needed, in which case a factory will be needed.
     datareader = TextLoader()
     purchase_info = datareader.load_data(product_key, path_to_data)
     return purchase_info
 
 
 def add_product_type(product_key: dict[str, str]) -> dict[str, str]:
+    """
+    Function to add additional product types to the lookup key.
+
+    :product_key: Product lookup key
+    :returns: The lookup key with the additional entry.
+    """
     product_key_id = input("Input four letter product abbreivation: ")
     if len(product_key_id) != 4:
         input("Product key is not four letters. Press Enter to Return...")
+        return product_key
     product_key_def = input("Input description of product: ")
     product_key[product_key_id] = product_key_def
     return product_key
