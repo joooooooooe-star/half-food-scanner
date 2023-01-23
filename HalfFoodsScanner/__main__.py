@@ -47,6 +47,7 @@ def main():
             case "3":
                 product_key = add_product_type(product_key)
             case "9":
+                print("Quitting...")
                 break
             case _:
                 input("Invalid selection. Press Enter to retry...")
@@ -94,15 +95,24 @@ def show_detailed_menu(product_key: dict[str, str]) -> None:
         selection = input()
         match selection:
             case "1":
-                print(purchase_info.get_advanced_purchase_information())
+                info, _ = purchase_info.get_advanced_purchase_information(product_key)
+                print(info)
                 input("\n Press Enter to Return...")
             case "2":
                 print("Type one of the listed product types:")
+                # Displayed Index will be incremented for a more natural order
                 for i, product_type in enumerate(selection_key := sorted(list(product_key.keys()))):
-                    print(f"{i}: {product_type}")
-                product_type_num = int(input())
-                print(purchase_info.get_subtypes(selection_key[product_type_num]))
-                input("\n Press Enter to Return...")
+                    print(f"{i+1}: {product_type}")
+                try:
+                    product_type_num = int(input())
+                    
+                    # Input Index will be decremented 
+                    print(purchase_info.get_subtypes(selection_key[product_type_num-1]))
+                    input("\n Press Enter to Return...")
+                except ValueError:
+                    input("\nInvalid Option, press Enter to Return...")
+                except IndexError:
+                    input("\nInvalid Option, press Enter to Return...")
                 
             case "9":
                 input("Returning to Main Menu, press Enter to Return...")

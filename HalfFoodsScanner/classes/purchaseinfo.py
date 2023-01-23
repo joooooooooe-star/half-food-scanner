@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Tuple
+
 
 @dataclass
 class PurchaseInfo:
@@ -18,7 +20,6 @@ class PurchaseInfo:
     product_type_history: dict[str, list[str]]
     subtype_lookup: dict[str, set[str]]
 
-
     def get_basic_purchase_information(self) -> str:
         """
         Returns the purchase information required by Question 1 as a formattted string.
@@ -27,29 +28,35 @@ class PurchaseInfo:
         """
         return f"""
             Customer Name: {self.customer_name}
-            Date of Purchase: {self.purchase_date}
+            Date of Purchase: {datetime.strftime(self.purchase_date, "%B %d, %Y")}
             Quantity: {self.quantity}
             """
-    
-    def get_advanced_purchase_information(self) -> str:
+
+    def get_advanced_purchase_information(
+            self, product_key: dict[str, str]) -> Tuple[str, str]:
         """
         Returns the additional information required by Question 2 as a formattted string.
+        Note: This assumes there is one most common product type and there are no ties.
 
-        :return: Formatted string of the additional purchasing information.
+        :return: Tuple of the formatted string of the additional purchasing information, and the most common product type as a string
         """
         str_ret = []
+        max_count = 0
+        max_str = "None"
 
         # While formatting string, search for most common product type
         for product_type, id_list in self.product_type_history.items():
             item_list = ", ".join(id_list)
-            str_ret.append(f"{product_type} -- {len(id_list)} items: {item_list}")
+            str_ret.append(
+                f"{product_key[product_type]} -- {len(id_list)} items: {item_list}"
+            )
             if (id_count := len(id_list)) > max_count:
                 max_count = id_count
-                max_str = product_type
+                max_str = product_key[product_type]
         str_ret.append("\n")
         str_ret.append(f"Most common product type: {max_str}")
 
-        return "\n".join(str_ret)
+        return ("\n".join(str_ret), max_str)
 
     def get_subtypes(self, product_type: str) -> str:
         """
@@ -60,6 +67,7 @@ class PurchaseInfo:
                  purchase order.
         """
         if product_type in self.subtype_lookup:
-            return "".join(["Subtypes: ", ",".join(self.subtype_lookup[product_type])])
+            return "".join(
+                ["Subtypes: ", ", ".join(self.subtype_lookup[product_type])])
         else:
             return "Product Type not found"
